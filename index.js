@@ -3,11 +3,11 @@ const bodyParser = require("body-parser");
 const helmet = require("helmet");
 const compression = require("compression");
 const morgan = require("morgan");
+const userRoute = require("./routes/authRoute");
 
 const app = express();
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(helmet());
 app.use(compression());
 app.use(morgan("combined"));
@@ -20,6 +20,8 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something broke!");
 });
+
+app.use("/auth", userRoute);
 
 const PORT = process.env.PORT || 3000;
 
