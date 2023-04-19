@@ -44,22 +44,36 @@ const loginUsers = async (req, res) => {
       email,
     ]);
     if (userData.length === 0) {
-      res.status(401).send("Invalid email or password.");
+      res.status(401).send({
+        success: false,
+        message: "invalid email or password",
+      });
     } else {
       const user = userData[0];
       const passwordsMatch = await bcrypt.compare(password, user.password);
       if (passwordsMatch) {
         console.log("User logged in:", user.username);
-        res.send("You have successfully logged in!");
+        res.send({
+          success: true,
+          data: {
+            username: user.username,
+            email: user.email,
+          },
+          message: "You have successfully log in",
+        });
       } else {
-        res.status(401).send("Invalid email or password.");
+        res.status(401).send({
+          success: false,
+          message: "invalid email or password",
+        });
       }
     }
   } catch (error) {
     console.error(error, "Error Retrieving users ========");
-    res
-      .status(500)
-      .send("An error occurred while logging in. Please try again later.");
+    res.status(500).send({
+      success: false,
+      message: "An error occured while log in ",
+    });
   }
 };
 
