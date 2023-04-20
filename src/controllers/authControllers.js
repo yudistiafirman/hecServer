@@ -59,12 +59,12 @@ const loginUsers = async (req, res) => {
             username: user.username,
             email: user.email,
           },
-          message: "You have successfully log in",
+          message: "Berhasil Login",
         });
       } else {
         res.status(401).send({
           success: false,
-          message: "invalid email or password",
+          message: "Email atau password and salah",
         });
       }
     }
@@ -72,7 +72,7 @@ const loginUsers = async (req, res) => {
     console.error(error, "Error Retrieving users ========");
     res.status(500).send({
       success: false,
-      message: "An error occured while log in ",
+      message: "Terjadi kesalahan saat melakukan login",
     });
   }
 };
