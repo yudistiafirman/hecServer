@@ -2,6 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 const userRoute = require("./routes/authRoute");
+const jobRoute = require("./routes/jobRoute");
 
 const app = express();
 
@@ -17,8 +18,9 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something broke!");
 });
-
+app.use("/uploads", express.static("uploads"));
 app.use("/auth", userRoute);
+app.use("/job", jobRoute);
 
 const PORT = process.env.PORT || 3000;
 
