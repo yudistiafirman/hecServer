@@ -1,5 +1,5 @@
 const { postJobs } = require("../controllers/jobController");
-const uploadFiles = require("../middleware/uploadFiles");
+const { uploadFiles } = require("../middleware/uploadFiles");
 
 const jobRoute = require("express").Router();
 

@@ -17,21 +17,10 @@ var storage = multer.diskStorage({
     );
   },
 });
-var filefilter = (req, file, next) => {
-  try {
-    if (file.mimetype.includes("image") === false)
-      throw "File Must Be An Image";
-    next(null, true);
-  } catch (error) {
-    req.bebas = error;
-    next(null, false);
-  }
-};
 
 const upload = multer({
   storage: storage,
-  filefilter: filefilter,
   limits: { fieldSize: 200000000 },
-}).single("file");
+}).array("file");
 
 module.exports = upload;
