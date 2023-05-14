@@ -1,5 +1,101 @@
 const query = require("../config/connection");
 
+const getAllJobs = async (req, res) => {
+  try {
+    const search = req.query.search || "";
+    const filterBy = req.query.filterBy || "";
+    const page = parseInt(req.query.page) || 1; // Get the requested page from query parameters
+    const limit = parseInt(req.query.limit) || 10; // Set the number of items to display per page
+    const offset = (page - 1) * limit;
+
+    let baseQuery = `SELECT jobs.id, jobs.name , jobs.last_submission, job_category.category_name, status.status_name from jobs 
+    join job_category on jobs.job_category_id = job_category.id 
+    join status on jobs.status_id = status.id  where status_id != 12 and name like '%${search}%' `;
+
+    const values = [];
+
+    if (filterBy) {
+      baseQuery += `and job_category_id = ?`;
+      values.push(filterBy);
+    }
+
+    baseQuery += `LIMIT ${limit} OFFSET ${offset}`;
+
+    const jobsData = await query(baseQuery, values);
+    const totalData = await query(
+      "SELECT COUNT(*) AS total FROM jobs where status_id != 12"
+    );
+    const total = totalData[0].total;
+    const totalPages = Math.ceil(total / limit);
+    res.status(200).send({
+      page,
+      limit,
+      totalPages,
+      totalItems: total,
+      data: jobsData,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Terjadi Error Saat Pengambilan data Lowongan Pekerjaan  ",
+    });
+  }
+};
+
+const getAllJobCategories = async (req, res) => {
+  try {
+    const categoryData = await query("select * from job_category");
+    res.status(200).send({
+      success: true,
+      data: categoryData,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Terjadi Error Saat Pengambilan data Kategori Pekerjaan  ",
+    });
+  }
+};
+
+const getOneJob = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const jobDetail = await query(
+      `SELECT jobs.id, jobs.name, jobs.description, jobs.location, 
+    jobs.salary_range,jobs.created_at, jobs.last_submission,
+    job_category.category_name, status.status_name, files.file_url from jobs 
+    join job_category on jobs.job_category_id = job_category.id 
+    join status on jobs.status_id = status.id 
+    join files on jobs.files_id = files.id where jobs.id = ?`,
+      id
+    );
+
+    const requirementsData = await query(
+      `select requirement_name from job_requirements where jobs_id = ?`,
+      id
+    );
+    const responsibilityData = await query(
+      `select responsibility_name from job_responsibilities where jobs_id = ?`,
+      id
+    );
+    jobDetail[0].responsibilities = responsibilityData.map(
+      (v) => v.responsibility_name
+    );
+    jobDetail[0].requirements = requirementsData.map((v) => v.requirement_name);
+
+    res.status(200).send({
+      success: true,
+      data: jobDetail[0],
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Terjadi Error Saat pengambilan data detail Lowongan Pekerjaan",
+    });
+  }
+};
+
 const postJobs = async (req, res) => {
   try {
     const {
@@ -120,6 +216,43 @@ const postJobs = async (req, res) => {
   }
 };
 
+const updateJobStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const { id } = req.params;
+    if (!status) {
+      res.status(400).send({
+        success: false,
+        message: "Status tidak boleh kosong",
+      });
+    } else {
+      const statusId = await query(
+        "select id from status where status_name = ?",
+        status
+      );
+      await query("update jobs SET status_id = ? where id = ?", [
+        statusId[0].id,
+        id,
+      ]);
+
+      res.status(200).send({
+        success: true,
+        message: "Berhasil update status pekerjaan",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Terjadi Error Saat update status lowongan pekerjaan ",
+    });
+  }
+};
+
 module.exports = {
   postJobs,
+  getAllJobs,
+  getOneJob,
+  getAllJobCategories,
+  updateJobStatus,
 };
