@@ -8,9 +8,11 @@ const getAllJobs = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // Set the number of items to display per page
     const offset = (page - 1) * limit;
 
-    let baseQuery = `SELECT jobs.id, jobs.name , jobs.last_submission, job_category.category_name, status.status_name from jobs 
+    let baseQuery = `SELECT jobs.id, jobs.name , jobs.last_submission, job_category.category_name, status.status_name, job_type.type_name from jobs 
     join job_category on jobs.job_category_id = job_category.id 
-    join status on jobs.status_id = status.id  where status_id != 12 and name like '%${search}%' `;
+    join status on jobs.status_id = status.id  
+    join job_type on jobs.job_type_id = job_type.id
+    where status.status_name != 'DELETED' and name like '%${search}%' `;
 
     const values = [];
 
@@ -23,7 +25,7 @@ const getAllJobs = async (req, res) => {
 
     const jobsData = await query(baseQuery, values);
     const totalData = await query(
-      "SELECT COUNT(*) AS total FROM jobs where status_id != 12"
+      `SELECT COUNT(*) AS total FROM jobs where status_id != (select id from status where status_name = 'DELETED')`
     );
     const total = totalData[0].total;
     const totalPages = Math.ceil(total / limit);
@@ -64,10 +66,12 @@ const getOneJob = async (req, res) => {
     const jobDetail = await query(
       `SELECT jobs.id, jobs.name, jobs.description, jobs.location, 
     jobs.salary_range,jobs.created_at, jobs.last_submission,
-    job_category.category_name, status.status_name, files.file_url from jobs 
+    job_category.category_name, status.status_name,job_type.type_name , files.file_url from jobs 
     join job_category on jobs.job_category_id = job_category.id 
     join status on jobs.status_id = status.id 
-    join files on jobs.files_id = files.id where jobs.id = ?`,
+    join files on jobs.files_id = files.id 
+    join job_type on jobs.job_type_id = job_type.id
+    where jobs.id = ?`,
       id
     );
 
@@ -108,6 +112,7 @@ const postJobs = async (req, res) => {
       status,
       requirement,
       responsibility,
+      jobType,
     } = req.body;
     if (!jobName) {
       res.status(400).send({
@@ -149,10 +154,19 @@ const postJobs = async (req, res) => {
         success: false,
         message: "Tanggung jawab pekerjaan tidak boleh kosong",
       });
+    } else if (!jobType) {
+      res.status(400).send({
+        success: false,
+        message: "Tipe  pekerjaan tidak boleh kosong",
+      });
     } else {
       const statusId = await query(
         "select id from status where status_name = ?",
         status
+      );
+      const jobTypeId = await query(
+        `select id from job_type where type_name = ?`,
+        jobType
       );
       const insertFile = await query(
         "INSERT into files (file_url) VALUES (?)",
@@ -173,7 +187,7 @@ const postJobs = async (req, res) => {
       }
 
       const insertJob = await query(
-        "INSERT INTO jobs (name, description, location,salary_range,last_submission,files_id,status_id,job_category_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO jobs (name, description, location,salary_range,last_submission,files_id,status_id,job_category_id,job_type_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
           jobName,
           description,
@@ -185,6 +199,7 @@ const postJobs = async (req, res) => {
           jobCategoryId.length > 0
             ? jobCategoryId[0].id
             : insertJobCategory.insertId,
+          jobTypeId[0].id,
         ]
       );
       const requirementValues = requirement.map((v) => [v, insertJob.insertId]);
