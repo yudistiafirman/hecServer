@@ -256,6 +256,36 @@ const updateJobStatus = async (req, res) => {
       });
     }
   } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Terjadi Error Saat update status lowongan pekerjaan ",
+    });
+  }
+};
+
+const deleteJob = async (req, res) => {
+  try {
+    const { idToDelete } = req.body;
+    if (!idToDelete || idToDelete.length === 0) {
+      res.status(400).send({
+        success: false,
+        message: "id yang akan dihapus tidak boleh kosong",
+      });
+    } else {
+      const updateValues = idToDelete.map((v) => `WHEN ${v} THEN 15`).join(" ");
+      const updateIds = idToDelete.join(",");
+      await query(`
+      UPDATE jobs
+      SET status_id =
+        (CASE id ${updateValues} END)
+      WHERE id IN (${updateIds});
+    `);
+    }
+    res.status(200).send({
+      success: true,
+      message: "Berhasil menghapus pekerjaan",
+    });
+  } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
@@ -270,4 +300,5 @@ module.exports = {
   getOneJob,
   getAllJobCategories,
   updateJobStatus,
+  deleteJob,
 };
