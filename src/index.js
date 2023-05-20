@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 const userRoute = require("./routes/authRoute");
 const jobRoute = require("./routes/jobRoute");
+const trainingRoute = require("./routes/trainingRoute");
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use((err, req, res, next) => {
 app.use("/uploads", express.static("uploads"));
 app.use("/auth", userRoute);
 app.use("/job", jobRoute);
+app.use("/training", trainingRoute);
 
 const PORT = process.env.PORT || 3000;
 

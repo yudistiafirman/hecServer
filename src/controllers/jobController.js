@@ -272,7 +272,7 @@ const deleteJob = async (req, res) => {
         message: "id yang akan dihapus tidak boleh kosong",
       });
     } else {
-      const updateValues = idToDelete.map((v) => `WHEN ${v} THEN 15`).join(" ");
+      const updateValues = idToDelete.map((v) => `WHEN ${v} THEN 18`).join(" ");
       const updateIds = idToDelete.join(",");
       await query(`
       UPDATE jobs
@@ -289,7 +289,7 @@ const deleteJob = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Terjadi Error Saat update status lowongan pekerjaan ",
+      message: "Terjadi Error Saat menghapus training",
     });
   }
 };
