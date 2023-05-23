@@ -110,7 +110,7 @@ const getAllTraining = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // Get the requested page from query parameters
     const limit = parseInt(req.query.limit) || 10; // Set the number of items to display per page
     const offset = (page - 1) * limit;
-    let baseQuery = `SELECT training.id, training.name , training.start_date, training.end_date ,training_category.category_name, status.status_name from training 
+    let baseQuery = `SELECT training.id, training.name , training.start_date, training.end_date ,training_category.category_name, training.isFull ,status.status_name from training 
     join training_category on training.training_category_id = training_category.id 
     join status on training.status_id = status.id  
     where status.status_name != 'DELETED' and name like '%${search}%' `;
@@ -152,7 +152,7 @@ const getOneTraining = async (req, res) => {
     const trainingDetail = await query(
       `SELECT training.id, training.name, training.descriptions, training.start_date, 
     training.end_date,training.created_at,
-    training_category.category_name, status.status_name , files.file_url from training
+    training_category.category_name, training.isFull, status.status_name , files.file_url from training
     join training_category on training.training_category_id = training_category.id 
     join status on training.status_id = status.id 
     join files on training.files_id = files.id 
@@ -225,7 +225,12 @@ const deieteTraining = async (req, res) => {
         message: "id yang akan dihapus tidak boleh kosong",
       });
     } else {
-      const updateValues = idToDelete.map((v) => `WHEN ${v} THEN 18`).join(" ");
+      const updateValues = idToDelete
+        .map(
+          (v) =>
+            `WHEN ${v} THEN (select id from status where status_name = 'DELETED')`
+        )
+        .join(" ");
       const updateIds = idToDelete.join(",");
       await query(`
           UPDATE training

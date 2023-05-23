@@ -272,7 +272,12 @@ const deleteJob = async (req, res) => {
         message: "id yang akan dihapus tidak boleh kosong",
       });
     } else {
-      const updateValues = idToDelete.map((v) => `WHEN ${v} THEN 18`).join(" ");
+      const updateValues = idToDelete
+        .map(
+          (v) =>
+            `WHEN ${v} THEN (select id from status where status_name = 'DELETED')`
+        )
+        .join(" ");
       const updateIds = idToDelete.join(",");
       await query(`
       UPDATE jobs

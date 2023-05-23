@@ -14,7 +14,7 @@ const trainingRoute = require("express").Router();
 
 trainingRoute.post("/create", uploadFiles, postTraining);
 trainingRoute.get("/all", getAllTraining);
-trainingRoute.get("/category", getTrainingCategories);
+trainingRoute.get("/categories", getTrainingCategories);
 trainingRoute.get("/:id", getOneTraining);
 trainingRoute.put("/update/:id", updateTrainingStatus);
 trainingRoute.put("/update-popular/:id", updatePopularTraining);

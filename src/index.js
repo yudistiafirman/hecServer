@@ -4,6 +4,7 @@ const cors = require("cors");
 const userRoute = require("./routes/authRoute");
 const jobRoute = require("./routes/jobRoute");
 const trainingRoute = require("./routes/trainingRoute");
+const facilityRoute = require("./routes/facilityRoute");
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/auth", userRoute);
 app.use("/job", jobRoute);
 app.use("/training", trainingRoute);
+app.use("/facility", facilityRoute);
 
 const PORT = process.env.PORT || 3000;
 
