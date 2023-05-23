@@ -1,17 +1,12 @@
 const query = require("../config/connection");
 
-const postFacility = async (req, res) => {
+const postPartnerShipGallery = async (req, res) => {
   try {
-    const { facilityName, descriptions, status } = req.body;
-    if (!facilityName) {
+    const { name, status } = req.body;
+    if (!name) {
       res.status(400).send({
         success: false,
-        message: "Nama Fasilitas tidak boleh kosong",
-      });
-    } else if (!descriptions) {
-      res.status(400).send({
-        success: false,
-        message: "Deskripsi Fasiitas tidak boleh kosong",
+        message: "Nama tidak boleh kosong",
       });
     } else {
       const statusId = await query(
@@ -25,23 +20,23 @@ const postFacility = async (req, res) => {
       );
 
       await query(
-        "INSERT INTO facility (facility_name, descriptions, files_id , status_id) VALUES (?, ?, ?, ?)",
-        [facilityName, descriptions, insertFile.insertId, statusId[0].id]
+        "INSERT INTO partnership_gallery (name, files_id , status_id) VALUES (?, ?, ?)",
+        [name, insertFile.insertId, statusId[0].id]
       );
       res.status(201).send({
         success: true,
-        message: "Fasilitas Pelatihan baru berhasil dibuat",
+        message: "Galeri partnership baru berhasil dibuat",
       });
     }
   } catch (error) {
     res.status(500).send({
       success: false,
-      message: "Terjadi Error Saat Pembuatan Fasilitas Pelatihan ",
+      message: "Terjadi Error Saat partnership Galeri ",
     });
   }
 };
 
-const getAllFacility = async (req, res) => {
+const getAllPartnerShipGallery = async (req, res) => {
   try {
     const search = req.query.search || "";
     const filterBy = req.query.filterBy || "";
@@ -49,16 +44,16 @@ const getAllFacility = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // Set the number of items to display per page
     const offset = (page - 1) * limit;
 
-    let baseQuery = `SELECT facility.id, facility.facility_name , facility.created_at, facility.descriptions, files.file_url, status.status_name from facility 
-    join files on facility.files_id = files.id
-    join status on facility.status_id = status.id  
-    where status.status_name != 'DELETED' and facility.facility_name like '%${search}%' `;
+    let baseQuery = `SELECT partnership_gallery.id, partnership_gallery.name , partnership_gallery.created_at, files.file_url, status.status_name from partnership_gallery 
+    join files on partnership_gallery.files_id = files.id
+    join status on partnership_gallery.status_id = status.id  
+    where status.status_name != 'DELETED' and partnership_gallery.name like '%${search}%' `;
     const values = [];
 
     baseQuery += `LIMIT ${limit} OFFSET ${offset}`;
-    const facilityData = await query(baseQuery, values);
+    const partnerShipGalleryData = await query(baseQuery, values);
     const totalData = await query(
-      `SELECT COUNT(*) AS total FROM facility where status_id != (select id from status where status_name = 'DELETED')`
+      `SELECT COUNT(*) AS total FROM partnership_gallery where status_id != (select id from status where status_name = 'DELETED')`
     );
     const total = totalData[0].total;
     const totalPages = Math.ceil(total / limit);
@@ -67,42 +62,43 @@ const getAllFacility = async (req, res) => {
       limit,
       totalPages,
       totalItems: total,
-      data: facilityData,
+      data: partnerShipGalleryData,
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Terjadi Error Saat Pengambilan data Fasilitas  ",
+      message: "Terjadi Error Saat Pengambilan data partnership Gallery  ",
     });
   }
 };
 
-const getOneFacility = async (req, res) => {
+const getOnePartnerShipGallery = async (req, res) => {
   try {
     const { id } = req.params;
-    const facilityDetail = await query(
-      `SELECT facility.id, facility.facility_name , facility.created_at, facility.descriptions, files.file_url, status.status_name from facility 
-    join files on facility.files_id = files.id
-    join status on facility.status_id = status.id  where facility.id = ?`,
+    const partnershipGalleryDetail = await query(
+      `SELECT partnership_gallery.id, partnership_gallery.name , partnership_gallery.created_at, files.file_url, status.status_name from partnership_gallery 
+    join files on partnership_gallery.files_id = files.id
+    join status on partnership_gallery.status_id = status.id  where partnership_gallery.id = ?`,
       id
     );
 
     res.status(200).send({
       success: true,
-      data: facilityDetail[0],
+      data: partnershipGalleryDetail[0],
     });
   } catch (error) {
     res.status(500).send({
       success: false,
-      message: "Terjadi Error Saat pengambilan data detail Fasilitas",
+      message: "Terjadi Error Saat pengambilan data detail Partnership Gallery",
     });
   }
 };
 
-const deleteFacility = async (req, res) => {
+const deletePartnerShipGallery = async (req, res) => {
   try {
     const { idToDelete } = req.body;
+
     if (!idToDelete || idToDelete.length === 0) {
       res.status(400).send({
         success: false,
@@ -117,7 +113,7 @@ const deleteFacility = async (req, res) => {
         .join(" ");
       const updateIds = idToDelete.join(",");
       await query(`
-      UPDATE facility
+      UPDATE partnership_gallery
       SET status_id =
         (CASE id ${updateValues} END)
       WHERE id IN (${updateIds});
@@ -125,18 +121,18 @@ const deleteFacility = async (req, res) => {
     }
     res.status(200).send({
       success: true,
-      message: "Berhasil menghapus Fasilitas",
+      message: "Berhasil menghapus Training Gallery",
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Terjadi Error Saat menghapus Fasilitas",
+      message: "Terjadi Error Saat menghapus Partnership Gallery",
     });
   }
 };
 
-const updateFacilityStatus = async (req, res) => {
+const updatePartnerShipGalleryStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const { id } = req.params;
@@ -150,28 +146,28 @@ const updateFacilityStatus = async (req, res) => {
         "select id from status where status_name = ?",
         status
       );
-      await query("update facility SET status_id = ? where id = ?", [
+      await query("update partnership_gallery SET status_id = ? where id = ?", [
         statusId[0].id,
         id,
       ]);
 
       res.status(200).send({
         success: true,
-        message: "Berhasil update status Fasilitas",
+        message: "Berhasil update status Partnership Gallery",
       });
     }
   } catch (error) {
     res.status(500).send({
       success: false,
-      message: "Terjadi Error Saat update status Fasilitas ",
+      message: "Terjadi Error Saat update status Partnership Galleri ",
     });
   }
 };
 
 module.exports = {
-  postFacility,
-  getAllFacility,
-  getOneFacility,
-  deleteFacility,
-  updateFacilityStatus,
+  postPartnerShipGallery,
+  getAllPartnerShipGallery,
+  getOnePartnerShipGallery,
+  deletePartnerShipGallery,
+  updatePartnerShipGalleryStatus,
 };

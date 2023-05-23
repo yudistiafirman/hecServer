@@ -5,6 +5,9 @@ const userRoute = require("./routes/authRoute");
 const jobRoute = require("./routes/jobRoute");
 const trainingRoute = require("./routes/trainingRoute");
 const facilityRoute = require("./routes/facilityRoute");
+const trainingGalleryRoute = require("./routes/trainingGalleryRoute");
+const partnershipGalleryRoute = require("./routes/partnershipGalleryRoute");
+const homeGalleryRoute = require("./routes/homeGalleryRoute");
 
 const app = express();
 
@@ -25,6 +28,9 @@ app.use("/auth", userRoute);
 app.use("/job", jobRoute);
 app.use("/training", trainingRoute);
 app.use("/facility", facilityRoute);
+app.use("/training-gallery", trainingGalleryRoute);
+app.use("/partnership-gallery", partnershipGalleryRoute);
+app.use("/home-gallery", homeGalleryRoute);
 
 const PORT = process.env.PORT || 3000;
 
