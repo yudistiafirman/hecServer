@@ -49,7 +49,7 @@ const getAllFacility = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // Set the number of items to display per page
     const offset = (page - 1) * limit;
 
-    let baseQuery = `SELECT facility.id, facility.facility_name , facility.created_at, facility.descriptions, files.file_url, status.status_name from facility 
+    let baseQuery = `SELECT facility.id, facility.facility_name as name , facility.created_at as start_date, facility.descriptions, files.file_url, status.status_name from facility 
     join files on facility.files_id = files.id
     join status on facility.status_id = status.id  
     where status.status_name != 'DELETED' and facility.facility_name like '%${search}%' `;
@@ -82,7 +82,7 @@ const getOneFacility = async (req, res) => {
   try {
     const { id } = req.params;
     const facilityDetail = await query(
-      `SELECT facility.id, facility.facility_name , facility.created_at, facility.descriptions, files.file_url, status.status_name from facility 
+      `SELECT facility.id, facility.facility_name as name , facility.created_at, facility.descriptions as description, files.file_url, status.status_name from facility 
     join files on facility.files_id = files.id
     join status on facility.status_id = status.id  where facility.id = ?`,
       id

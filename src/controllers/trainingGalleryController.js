@@ -40,18 +40,21 @@ const getAllTrainingGallery = async (req, res) => {
   try {
     const search = req.query.search || "";
     const filterBy = req.query.filterBy || "";
+    const status = req.query.status || "";
     const page = parseInt(req.query.page) || 1; // Get the requested page from query parameters
     const limit = parseInt(req.query.limit) || 10; // Set the number of items to display per page
     const offset = (page - 1) * limit;
 
-    let baseQuery = `SELECT training_gallery.id, training_gallery.name , training_gallery.created_at, files.file_url, status.status_name from training_gallery 
+    let baseQuery = `SELECT training_gallery.id, training_gallery.name , training_gallery.created_at as start_date, files.file_url, status.status_name from training_gallery 
     join files on training_gallery.files_id = files.id
     join status on training_gallery.status_id = status.id  
     where status.status_name != 'DELETED' and training_gallery.name like '%${search}%' `;
-    const values = [];
+    if (status) {
+      baseQuery += `and  status_name = '${status}' `;
+    }
 
     baseQuery += `LIMIT ${limit} OFFSET ${offset}`;
-    const partnerShipGalleryData = await query(baseQuery, values);
+    const partnerShipGalleryData = await query(baseQuery);
     const totalData = await query(
       `SELECT COUNT(*) AS total FROM training_gallery where status_id != (select id from status where status_name = 'DELETED')`
     );

@@ -107,12 +107,16 @@ const getAllTraining = async (req, res) => {
   try {
     const search = req.query.search || "";
     const filterBy = req.query.filterBy || "";
+    const startDate = req.query.startDate || "";
+    const isPopular = req.query.isPopular || "";
+    const status = req.query.status || "";
     const page = parseInt(req.query.page) || 1; // Get the requested page from query parameters
     const limit = parseInt(req.query.limit) || 10; // Set the number of items to display per page
     const offset = (page - 1) * limit;
-    let baseQuery = `SELECT training.id, training.name , training.start_date, training.end_date ,training_category.category_name, training.isFull ,status.status_name from training 
+    let baseQuery = `SELECT training.id, training.name ,training.descriptions, files.file_url as training_image , training.start_date, training.end_date ,training_category.category_name, training.isFull ,training.isPopular, status.status_name from training 
     join training_category on training.training_category_id = training_category.id 
     join status on training.status_id = status.id  
+    join files on training.files_id = files.id 
     where status.status_name != 'DELETED' and name like '%${search}%' `;
 
     const values = [];
@@ -120,6 +124,18 @@ const getAllTraining = async (req, res) => {
     if (filterBy) {
       baseQuery += `and training_category_id = ?`;
       values.push(filterBy);
+    }
+    if (startDate) {
+      baseQuery += `and start_date = ?`;
+      values.push(startDate);
+    }
+
+    if (isPopular) {
+      baseQuery += "and isPopular = ?";
+      values.push(isPopular);
+    }
+    if (status) {
+      baseQuery += `and  status_name = '${status}' `;
     }
 
     baseQuery += `LIMIT ${limit} OFFSET ${offset}`;

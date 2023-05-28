@@ -39,19 +39,23 @@ const postHomeGallery = async (req, res) => {
 const getAllHomeGallery = async (req, res) => {
   try {
     const search = req.query.search || "";
-    const filterBy = req.query.filterBy || "";
+    const status = req.query.status || "";
     const page = parseInt(req.query.page) || 1; // Get the requested page from query parameters
     const limit = parseInt(req.query.limit) || 10; // Set the number of items to display per page
     const offset = (page - 1) * limit;
 
-    let baseQuery = `SELECT home_gallery.id, home_gallery.name , home_gallery.created_at, files.file_url, status.status_name from home_gallery 
+    let baseQuery = `SELECT home_gallery.id, home_gallery.name , home_gallery.created_at as start_date, files.file_url, status.status_name from home_gallery 
     join files on home_gallery.files_id = files.id
     join status on home_gallery.status_id = status.id  
     where status.status_name != 'DELETED' and home_gallery.name like '%${search}%' `;
     const values = [];
 
+    if (status) {
+      baseQuery += `and  status_name = '${status}' `;
+    }
+
     baseQuery += `LIMIT ${limit} OFFSET ${offset}`;
-    const homeGalleryData = await query(baseQuery, values);
+    const homeGalleryData = await query(baseQuery);
     const totalData = await query(
       `SELECT COUNT(*) AS total FROM home_gallery where status_id != (select id from status where status_name = 'DELETED')`
     );

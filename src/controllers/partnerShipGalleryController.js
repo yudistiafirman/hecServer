@@ -39,19 +39,20 @@ const postPartnerShipGallery = async (req, res) => {
 const getAllPartnerShipGallery = async (req, res) => {
   try {
     const search = req.query.search || "";
-    const filterBy = req.query.filterBy || "";
+    const status = req.query.status || "";
     const page = parseInt(req.query.page) || 1; // Get the requested page from query parameters
     const limit = parseInt(req.query.limit) || 10; // Set the number of items to display per page
     const offset = (page - 1) * limit;
 
-    let baseQuery = `SELECT partnership_gallery.id, partnership_gallery.name , partnership_gallery.created_at, files.file_url, status.status_name from partnership_gallery 
+    let baseQuery = `SELECT partnership_gallery.id, partnership_gallery.name , partnership_gallery.created_at as start_date, files.file_url, status.status_name from partnership_gallery 
     join files on partnership_gallery.files_id = files.id
     join status on partnership_gallery.status_id = status.id  
-    where status.status_name != 'DELETED' and partnership_gallery.name like '%${search}%' `;
-    const values = [];
-
+    where status.status_name != 'DELETED'  and  partnership_gallery.name like '%${search}%' `;
+    if (status) {
+      baseQuery += `and  status_name = '${status}' `;
+    }
     baseQuery += `LIMIT ${limit} OFFSET ${offset}`;
-    const partnerShipGalleryData = await query(baseQuery, values);
+    const partnerShipGalleryData = await query(baseQuery);
     const totalData = await query(
       `SELECT COUNT(*) AS total FROM partnership_gallery where status_id != (select id from status where status_name = 'DELETED')`
     );
@@ -121,7 +122,7 @@ const deletePartnerShipGallery = async (req, res) => {
     }
     res.status(200).send({
       success: true,
-      message: "Berhasil menghapus Training Gallery",
+      message: "Berhasil menghapus Partnership Gallery",
     });
   } catch (error) {
     console.log(error);

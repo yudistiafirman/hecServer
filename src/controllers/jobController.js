@@ -7,11 +7,13 @@ const getAllJobs = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // Get the requested page from query parameters
     const limit = parseInt(req.query.limit) || 10; // Set the number of items to display per page
     const offset = (page - 1) * limit;
+    const status = req.query.status || "";
 
-    let baseQuery = `SELECT jobs.id, jobs.name , jobs.last_submission, job_category.category_name, status.status_name, job_type.type_name from jobs 
+    let baseQuery = `SELECT jobs.id, jobs.name ,jobs.description ,jobs.last_submission, job_category.category_name, status.status_name, job_type.type_name,files.file_url from jobs 
     join job_category on jobs.job_category_id = job_category.id 
     join status on jobs.status_id = status.id  
     join job_type on jobs.job_type_id = job_type.id
+    join files on jobs.files_id = files.id 
     where status.status_name != 'DELETED' and name like '%${search}%' `;
 
     const values = [];
@@ -20,7 +22,9 @@ const getAllJobs = async (req, res) => {
       baseQuery += `and job_category_id = ?`;
       values.push(filterBy);
     }
-
+    if (status) {
+      baseQuery += `and  status_name = '${status}' `;
+    }
     baseQuery += `LIMIT ${limit} OFFSET ${offset}`;
 
     const jobsData = await query(baseQuery, values);
