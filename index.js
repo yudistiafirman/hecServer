@@ -1,13 +1,13 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
-const userRoute = require("./routes/authRoute");
-const jobRoute = require("./routes/jobRoute");
-const trainingRoute = require("./routes/trainingRoute");
-const facilityRoute = require("./routes/facilityRoute");
-const trainingGalleryRoute = require("./routes/trainingGalleryRoute");
-const partnershipGalleryRoute = require("./routes/partnershipGalleryRoute");
-const homeGalleryRoute = require("./routes/homeGalleryRoute");
+const userRoute = require("./src/routes/authRoute");
+const jobRoute = require("./src/routes/jobRoute");
+const trainingRoute = require("./src/routes/trainingRoute");
+const facilityRoute = require("./src/routes/facilityRoute");
+const trainingGalleryRoute = require("./src/routes/trainingGalleryRoute");
+const partnershipGalleryRoute = require("./src/routes/partnershipGalleryRoute");
+const homeGalleryRoute = require("./src/routes/homeGalleryRoute");
 
 const app = express();
 
