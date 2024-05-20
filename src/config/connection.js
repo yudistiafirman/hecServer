@@ -5,23 +5,23 @@ require("dotenv").config();
 var sshClient = new Client();
 
 const dbServer = {
-	host: "verona.sg.domainesia.com",
-	port: 3306, // port lokal yang di-forward ke port MySQL di server,
-	user: "heccoid1_root",
-	password: "Haloaulia15",
-	database: "heccoid1_hec_database",
+	host: process.env.DB_HOST,
+	port: process.env.DB_PORT, // port lokal yang di-forward ke port MySQL di server,
+	user: process.env.DB_USER,
+	password: process.env.DB_PASS,
+	database: process.env.DB_NAME,
 };
 
 const tunnelConfig = {
-	host: "verona.sg.domainesia.com",
-	port: 64000,
-	username: "heccoid1",
-	password: "Haloaulia15",
+	host: process.env.TUNNEL_HOST,
+	port: process.env.TUNNEL_PORT,
+	username: process.env.TUNNEL_USERNAME,
+	password: process.env.TUNNEL_PASSWORD,
 };
 
 const forwardConfig = {
-	srcHost: "127.0.0.1",
-	srcPort: 3306,
+	srcHost: process.env.FORWARD_HOST,
+	srcPort: process.env.FORWARD_PORT,
 	dstHost: dbServer.host,
 	dstPort: dbServer.port,
 };
