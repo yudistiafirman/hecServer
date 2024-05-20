@@ -5,10 +5,7 @@ const uploadFiles = async (req, res, next) => {
 		try {
 			console.log("inni req files", req.files);
 			if (req.files.length === 0) {
-				res.status(400).send({
-					success: false,
-					message: "Files Not Found",
-				});
+				next();
 			} else {
 				req.imagePath = req.files;
 				next();

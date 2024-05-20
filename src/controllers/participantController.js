@@ -70,8 +70,6 @@ const deleteParticipants = async (req, res) => {
 			});
 		}
 
-		console.log("ini participant id", participantIds);
-
 		// Mengambil file URLs dan file IDs
 		const filesData = await query(
 			`SELECT files.id, files.file_url FROM participant JOIN files ON participant.files_id = files.id WHERE participant.id IN (${participantIds.join(
@@ -303,6 +301,131 @@ const searchCertificateByNumber = async (req, res) => {
 	}
 };
 
+const editParticipant = async (req, res) => {
+	try {
+		const { participantId } = req.params;
+		const {
+			participantName,
+			email,
+			phoneNumber,
+			address,
+			register_date,
+			NIS,
+		} = req.body;
+
+		// Cek apakah ada file baru yang diupload
+		if (req.files && req.imagePath) {
+			const newFilePath = req.imagePath[0].path;
+
+			// Mengambil file_id lama
+			const filesData = await query(
+				`SELECT files_id FROM participant WHERE id = ?`,
+				[participantId]
+			);
+			const oldFileId = filesData[0].files_id;
+
+			// Menghapus file lama
+			const oldFileData = await query(
+				`SELECT file_url FROM files WHERE id = ?`,
+				[oldFileId]
+			);
+			const oldFilePath = path.join(
+				__dirname,
+				"../",
+				oldFileData[0].file_url
+			);
+			fs.unlinkSync(oldFilePath);
+
+			// Memasukkan file baru
+			const insertFile = await query(
+				"INSERT INTO files (file_url) VALUES (?)",
+				[newFilePath]
+			);
+
+			// Update file_id di tabel participant
+			await query(`UPDATE participant SET files_id = ? WHERE id = ?`, [
+				insertFile.insertId,
+				participantId,
+			]);
+		}
+
+		// Update data peserta
+		const updateQuery = `
+            UPDATE participant 
+            SET name = ?, email = ?, phone_number = ?, address = ?, register_date = ?, NIS = ?
+            WHERE id = ?`;
+
+		await query(updateQuery, [
+			participantName,
+			email,
+			phoneNumber,
+			address,
+			register_date,
+			NIS,
+			participantId,
+		]);
+
+		res.status(200).send({
+			success: true,
+			message: "Data peserta dan foto berhasil diupdate",
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).send({
+			success: false,
+			message: "Terjadi Error Saat Mengupdate Data Peserta",
+		});
+	}
+};
+
+const editCertificate = async (req, res) => {
+	try {
+		const { certificateId } = req.params;
+		const { trainingName, batch, certificateNumber } = req.body;
+
+		let updates = [];
+		let data = [];
+
+		if (trainingName) {
+			updates.push("training_name = ?");
+			data.push(trainingName);
+		}
+		if (batch) {
+			updates.push("batch = ?");
+			data.push(batch);
+		}
+		if (certificateNumber) {
+			updates.push("number = ?");
+			data.push(certificateNumber);
+		}
+
+		if (updates.length === 0) {
+			return res.status(400).send({
+				success: false,
+				message: "No data provided to update",
+			});
+		}
+
+		const updateQuery = `UPDATE certificate SET ${updates.join(
+			", "
+		)} WHERE id = ?`;
+		data.push(certificateId); // Add certificateId to the data array for the query
+
+		await query(updateQuery, data);
+
+		res.status(200).send({
+			success: true,
+			message: "Data sertifikat berhasil diupdate",
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).send({
+			success: false,
+			message: "Terjadi Error Saat Mengupdate Data Sertifikat",
+		});
+	}
+};
+
 module.exports = {
 	createParticipant,
 	getAllParticipant,
@@ -311,4 +434,6 @@ module.exports = {
 	deleteParticipants,
 	deleteCertificates,
 	searchCertificateByNumber,
+	editParticipant,
+	editCertificate,
 };
