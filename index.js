@@ -8,6 +8,7 @@ const facilityRoute = require("./src/routes/facilityRoute");
 const trainingGalleryRoute = require("./src/routes/trainingGalleryRoute");
 const partnershipGalleryRoute = require("./src/routes/partnershipGalleryRoute");
 const homeGalleryRoute = require("./src/routes/homeGalleryRoute");
+const participantRoute = require("./src/routes/participantRoute");
 
 const app = express();
 
@@ -16,12 +17,12 @@ app.use(morgan("combined"));
 app.use(cors());
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+	res.send("Hello World!");
 });
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send("Something broke!");
+	console.error(err.stack);
+	res.status(500).send("Something broke!");
 });
 app.use("/uploads", express.static("uploads"));
 app.use("/auth", userRoute);
@@ -31,9 +32,10 @@ app.use("/facility", facilityRoute);
 app.use("/training-gallery", trainingGalleryRoute);
 app.use("/partnership-gallery", partnershipGalleryRoute);
 app.use("/home-gallery", homeGalleryRoute);
+app.use("/participant", participantRoute);
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+	console.log(`Server listening on port ${PORT}`);
 });

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +23,7 @@
     "mysql": "^2.18.1",
     "mysql2": "^3.2.3",
     "nodemon": "^2.0.22",
+    "ssh2": "^1.15.0",
     "typescript": "^5.0.4"
   }
 }
