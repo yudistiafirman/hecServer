@@ -16,7 +16,7 @@ const tunnelConfig = {
 	host: "verona.sg.domainesia.com",
 	port: 64000,
 	username: "heccoid1",
-	password: "+6p#y4O63iWIrR",
+	password: "Haloaulia15",
 };
 
 const forwardConfig = {
