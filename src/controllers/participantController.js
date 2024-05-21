@@ -86,7 +86,7 @@ const deleteParticipants = async (req, res) => {
 
 		// Hapus file fisik
 		filesData.forEach((file) => {
-			const filePath = path.join(__dirname, "../uploads", file.file_url);
+			const filePath = path.join(__dirname, "../../", file.file_url);
 			fs.unlink(filePath, (err) => {
 				if (err)
 					console.error(`Error deleting file ${filePath}: ${err}`);
@@ -331,7 +331,7 @@ const editParticipant = async (req, res) => {
 			);
 			const oldFilePath = path.join(
 				__dirname,
-				"../",
+				"../../",
 				oldFileData[0].file_url
 			);
 			fs.unlinkSync(oldFilePath);
